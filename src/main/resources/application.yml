@@ -64,7 +64,8 @@ mybatis:
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: cn.tycoding.entity
 
-#mybaatis分页插件pagehelper设置
+#mybatis分页插件pagehelper设置 配置分页拦截器
+#pagehelper分页插件的原理是利用mybatis拦截器，在查询数据库的时候，拦截下SQL，然后进行修改，从而实现分页
 pagehelper:
   pagehelperDialect: mysql
   reasonable: true

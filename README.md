@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-# 教你优雅的入门Spring Boot2.x
-
-**如果觉得不错就点击右上角star鼓励一下笔者吧(#^.^#)**
+# 依据TyCoding的Spring Boot2.x教程学习的工程
 
 **技术栈**
 
@@ -14,9 +11,9 @@
 
 **启动说明**
 
-* 启动前，请配置好 [application.yml](https://github.com/TyCoding/spring-boot/blob/master/src/main/resources/application.yml) 中连接数据库的用户名和密码，以及Redis服务器的地址和端口信息。
+* 启动前，请优先配置好工程中resources下的配置文件[application.yml]中数据库相关信息。
 
-* 启动前，请创建数据库`seckill`，建表SQL语句放在：[/db/sys_schema.sql](https://github.com/TyCoding/spring-boot/blob/master/db/sys_schema.sql)。具体的建表和建库语句请仔细看SQL文件。
+* 启动前，请创建数据库`seckill`，建表SQL语句放在：[/db/sys_schema.sql]。具体的建表和建库语句请仔细看SQL文件。
 
 * 配置完成后，运行位于 `src/main/cn/tycoding/`下的SpringbootApplication中的main方法，访问 `http://localhost:8080/` 进行API测试。
 
@@ -41,6 +38,7 @@
 │   │   │           ├── entity  -- 实体类
 │   │   │           ├── interceptor  -- 自定义拦截器
 │   │   │           ├── mapper  -- mybatis-Mapper层映射接口，或称为DAO层
+│   │   │           ├── config  -- 配置RabbitMQ消息队列相关内容
 │   │   │           └── service  -- service业务层
 │   │   └── resources  -- Spring Boot资源文件目录
 │   │       ├── application.yml  -- Spring Boot核心配置文件
@@ -54,15 +52,10 @@
 │   └── test
 ```
 
-# 准备
-
-开始实战Spring Boot项目，首先，你需要将Spring Boot工程搭建出来。
-
-Spring Boot工程搭建请看我的博客：[Spring Boot入门之工程搭建](http://tycoding.cn/2018/09/28/spring-boot/)
-
 ## Spring Boot应用启动器
 
-Spring Boot提供了很多应用启动器，分别用来支持不同的功能，说白了就是`pom.xml`中的依赖配置，因为Spring Boot的自动化配置特性，我们并不需再考虑项目依赖版本问题，使用Spring Boot的应用启动器，它能自动帮我们将相关的依赖全部导入到项目中。
+Spring Boot提供了很多应用启动器，分别用来支持不同的功能，说白了就是`pom.xml`中的依赖配置，
+因为Spring Boot的自动化配置特性，我们并不需再考虑项目依赖版本问题，使用Spring Boot的应用启动器，它能自动帮我们将相关的依赖全部导入到项目中。
 
 我们这里介绍几个常见的应用启动器：
 
@@ -83,25 +76,31 @@ Spring Boot提供了很多应用启动器，分别用来支持不同的功能，
 
 ## Spring Boot项目结构设计
 
-Spring Boot项目（即Maven项目），当然拥有最基础的Maven项目结构。除此之外：
+Spring Boot项目（即Maven项目），当然拥有最基础的Maven项目结构。
+约定大于配置！！！
+除此之外：
 
 1. Spring Boot项目中不包含webapp(webroot)目录。
+
 2. Spring Boot默认提供的静态资源目录需要置于classpath下，且其下的目录名称要符合一定规定。
-3. Spring Boot默认不提倡用XML配置文件，主张使用YML作为配置文件格式，YML有更简洁的语法。当然也可以使用.properties作为配置文件格式。
-4. Spring Boot官方推荐使用Thymeleaf作为前端模板引擎，并且Thymeleaf默认将templates作为静态页面的存放目录（由配置文件指定）。
+
+3. Spring Boot**默认不提倡用XML配置文件，主张使用YML作为配置文件格式**，YML有更简洁的语法。当然也可以使用.properties作为配置文件格式。
+
+4. Spring Boot官方推荐使用Thymeleaf作为前端模板引擎，并且Thymeleaf默认将`resources/templates`作为静态页面的存放目录（由配置文件指定）。
+
 5. Spring Boot默认将`resources`作为静态资源的存放目录，存放前端静态文件、项目配置文件。
 
 6. Spring Boot规定`resources`下的子级目录名要符合一定规则，一般我们设置`resources/static`为前端静态（JS,CSS）的存放目录；设置`resources/templates`作为HTML页面的存放目录。
 
 7. Spring Boot指定的Thymeleaf模板引擎文件目录`/resources/templates`是受保护的目录，这与之前的WEB项目的WEB-INF文件夹和类似，特点就是里面的静态资源不能直接访问，一般我们通过Controller映射访问。
 
-8. 建议将Mybatis-Mapper的XML映射文件放于`resources/`目录下，我这里设为`resources/mapper`目录，且`src/main/java/Mapper`下的Mapper层接口要使用`@Mapper`注解标识，不然mybatis找不到接口对应的XML映射文件。
+8. 建议将Mybatis-Mapper的XML映射文件放于`resources/`目录下，我这里设为`resources/mapper`目录，**且`src/main/java/Mapper`下的Mapper层接口要使用`@Mapper`注解标识，不然mybatis找不到接口对应的XML映射文件。**
 
-9. `SpringBootApplication.java`为项目的启动器类，项目不需要部署到Tomcat上，由SpringBoot提供的服务器部署项目（运行启动器类即可）；且SpringBoot会自动扫描该启动器同级和子级下用注解标识的Bean，也就是之前我们配置的`<context:component-scan>`在SpringBoot中是完全不需类似的配置的。
+9. `SpringBootApplication.java`为项目的启动器类，项目不需要部署到Tomcat上，由SpringBoot提供的服务器部署项目（运行启动器类即可）；**且SpringBoot会自动扫描该启动器同级和子级下用注解标识的Bean**，也就是之前我们配置的`<context:component-scan>`在SpringBoot中是完全不需类似的配置的。
 
 10. Spring Boot不建议使用JSP页面，如果想使用，请自行百度解决办法。我们常用HTML页面+Thymeleaf模板引擎。Thyemeleaf模板引擎提供了很多内置语法，比如：可以通过`<div th:text="${xx}">`取出来后端存放在域对象中的数据。
 
-11. 上面说了Spring Boot提供的存放HTML静态页面的目录`resources/templates`是受保护的目录，访问其中的HTML页面要通过Controller映射，这就间接规定了你需要配置Spring的视图解析器，且Controller类不能使用`@RestController`标识。
+11. HTML静态页面的目录`resources/templates`是受保护的目录，访问其中的HTML页面要通过Controller映射，这就间接规定了你需要配置Spring的视图解析器，且Controller类不能使用`@RestController`标识。
 
 
 # 起步
@@ -112,15 +111,13 @@ Spring Boot项目（即Maven项目），当然拥有最基础的Maven项目结�
 
 因为Spring Boot框架的一大优势就是自动化配置，从pom.xml的配置中就能明显感受到。
 
-所以这里推荐一下我之前的SSM阶段整合项目： [SSM详细入门整合案例](https://github.com/TyCoding/ssm)    [SSM+Redis+Shiro+Solr+Vue.js整合项目](https://github.com/TyCoding/ssm-redis-solr)
-
 ## 项目依赖
 
-本项目的依赖文件请看Github仓库：[spring-boot/pom.xml](https://github.com/TyCoding/spring-boot/blob/master/pom.xml)
+本项目的依赖文件请看Github仓库：[spring-boot/pom.xml]
 
 ## 初始化数据库
 
-本项目数据库表设计请看GitHub仓库：[spring-boot/db/](https://github.com/TyCoding/spring-boot/tree/master/db)
+本项目数据库表设计请看GitHub仓库：[spring-boot/db/]
 
 请运行项目前，先把数据库表结构建好
 
@@ -130,7 +127,9 @@ Spring Boot项目（即Maven项目），当然拥有最基础的Maven项目结�
 
 所以说，SpringBoot整合Mybatis的思想和Spring整合Mybatis的思想基本相同，不同之处有两点：
 
-* 1.Mapper接口的XML配置文件变化。之前我们使用Mybatis接口代理开发，规定Mapper映射文件要和接口在一个目录下；而这里Mapper映射文件置于`resources/mapper/`下，且置于`src/main/java/`下的Mapper接口需要用`@Mapper`注解标识，不然映射文件与接口无法匹配。
+* 1.Mapper接口的XML配置文件变化。
+   之前我们使用Mybatis接口代理开发，规定Mapper映射文件要和接口在一个目录下；
+   而这里Mapper映射文件置于`resources/mapper/`下，且置于`src/main/java/`下的Mapper接口需要用`@Mapper`注解标识，不然映射文件与接口无法匹配。
 
 * 2.SpringBoot建议使用YAML作为配置文件，它有更简便的配置方式。所以整合Mybatis在配置文件上有一定的区别，但最终都是那几个参数的配置。
 
@@ -138,11 +137,9 @@ Spring Boot项目（即Maven项目），当然拥有最基础的Maven项目结�
 
 ### 整合配置文件
 
-本例详细代码请看GitHub仓库：[spring-boot/resources/application.yml](https://github.com/TyCoding/spring-boot/blob/master/src/main/resources/application.yml)
-
 在Spring阶段用XML配置mybatis无非就是配置：1.连接池；2.数据库url连接；3.mysql驱动；4.其他初始化配置
 
-```YAML
+```YML
 spring:
   datasource:
     name: springboot
@@ -156,7 +153,7 @@ spring:
       #基本属性
       url: jdbc:mysql://127.0.0.1:3306/springboot?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true
       username: root
-      password: root
+      password: 123
       #配置初始化大小/最小/最大
       initial-size: 1
       min-idle: 1
@@ -184,10 +181,17 @@ spring:
 
 4. `datasource`数据源的配置，`name`表示当前数据源的名称，类似于之前的`<bean id="dataSource">`id属性，这里可以任意指定，因为我们无需关注Spring是怎么注入这个Bean对象的。
 
-5. `druid`代表本项目中使用了阿里的druid连接池，`driver-class-name:`相当于XML中的`<property name="driverClassName">`；`url`代表XML中的`<property name="url">`；`username`代表XML中的`<property name="username">`；`password`代表XML中的`<property name="password">`；其他druid的私有属性配置不再解释。这里注意druid连接池和c3p0连接池在XML的<property>的name中就不同，在此处SpringBoot的配置中当然名称也不同。
+5. `druid`代表本项目中使用了阿里的druid连接池，`driver-class-name:`相当于XML中的`<property name="driverClassName">`；
+   `url`代表XML中的`<property name="url">`；
+   `username`代表XML中的`<property name="username">`；
+   `password`代表XML中的`<property name="password">`；
+   其他druid的私有属性配置不再解释。
+   这里注意druid连接池和c3p0连接池在XML的<property>的name中就不同，在此处SpringBoot的配置中当然名称也不同。
 
 
-如果Spring整合Mybtis的配置你已经很熟悉了，那么这个配置你肯定也很眼熟，从英文名称上就很容易区分出来。这里需要注意的就是YAML语法规定不同行空格代表了不同的层级结构。
+如果Spring整合Mybtis的配置你已经很熟悉了，那么这个配置你肯定也很眼熟，从英文名称上就很容易区分出来。
+这里需要注意的就是YAML语法规定不同行空格代表了不同的层级结构。
+
 
 既然完成了SpringBoot-Mybatis基本配置下面我们实战讲解如何实现基本的CRUD。
 
@@ -320,7 +324,7 @@ spring:
     cache: false
 ```
 
-指定Thymeleaf模板引擎扫描`resources`下的`templates`文件夹中已`.html`结尾的文件。这样就实现了MVC中关于视图解析器的配置：
+指定Thymeleaf模板引擎扫描`resources`下的`templates`文件夹中以`.html`结尾的文件。这样就实现了MVC中关于视图解析器的xml配置：
 
 ```xml
     <!-- 配置视图解析器 -->
@@ -330,9 +334,10 @@ spring:
     </bean>
 ```
 
-是不是感觉方便很多呢？但这里需要注意的是：`classpath:`后的目录地址一定要先加`/`，比如目前的`classpath:/templates/`。
+是不是感觉方便很多呢？
+**但这里需要注意的是：`classpath:`后的目录地址一定要先加`/`，比如目前的`classpath:/templates/`。**
 
-> 2.在Controller添加映射方法
+> 2.在Controller添加映射转接方法
 
 ```java
     @GetMapping(value = {"/", "/index"})
@@ -358,10 +363,18 @@ pagehelper:
 我这里使用了Mybatis的PageHelper分页插件，前端使用了ElementUI自带的分页插件：具体的教程请查看我的博客：[SpringMVC+ElementUI实现分页查询](http://tycoding.cn/2018/07/30/vue-6/)
 
 **核心配置：**
-
-`UserServiceImp.java`
+pagehelper分页插件的原理是利用mybatis拦截器，在查询数据库的时候，拦截下SQL，然后进行修改，从而实现分页
+`GoodsServiceImpl`
 
 ```java
+    /**
+     * 分页查询-条件查询方法
+     *
+     * @param goods    查询条件
+     * @param pageCode 当前页
+     * @param pageSize 每页的记录数
+     * @return
+     */
     public PageBean findByPage(Goods goods, int pageCode, int pageSize) {
         //使用Mybatis分页插件
         PageHelper.startPage(pageCode, pageSize);
@@ -435,39 +448,13 @@ public class MyInterceptor {
 4. 切记一定要调用proceed()方法，proceed()：执行被通知的方法，如不调用将会阻止被通知的方法的调用，也就导致Controller中的return会404。
 
 
-# Preview
-
-![](README/1.png)
-
-![](README/2.png)
-
-![](README/3.png)
-
-![](README/4.png)
 
 
-
-<br/>
-
-# 交流
-
-如果大家有兴趣，欢迎大家加入我的Java交流群：671017003 ，一起交流学习Java技术。博主目前一直在自学JAVA中，技术有限，如果可以，会尽力给大家提供一些帮助，或是一些学习方法，当然群里的大佬都会积极给新手答疑的。所以，别犹豫，快来加入我们吧！
-
-<br/>
-
-# 联系
-
-If you have some questions after you see this article, you can contact me or you can find some info by clicking these links.
-
-- [Blog@TyCoding's blog](http://www.tycoding.cn)
-- [GitHub@TyCoding](https://github.com/TyCoding)
-- [ZhiHu@TyCoding](https://www.zhihu.com/people/tomo-83-82/activities)
 
 =======
 # Project_Springboot
 这是一个SpringBoot关于购物的项目 涉及前后端 并尝试了一下RabbitMQ 是从大神TyCoding clone过来的
->>>>>>> 3b6aad013542c190f8811fa1f845da1bbbc81728
-<<<<<<< HEAD
-=======
-
->>>>>>> e043bcfcbeec0ae0363b6397344f5f02b0502fd4
+以下是他的联系方式
+- [Blog@TyCoding's blog](http://www.tycoding.cn)
+- [GitHub@TyCoding](https://github.com/TyCoding)
+- [ZhiHu@TyCoding](https://www.zhihu.com/people/tomo-83-82/activities)
